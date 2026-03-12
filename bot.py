@@ -1,8 +1,26 @@
 import os
 import requests
+import threading
+from flask import Flask
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from datetime import datetime
+
+# --- БЛОК ДЛЯ ОБХОДА ОШИБКИ RENDER ---
+app = Flask(__name__)
+
+@app.route('/')
+def health_check():
+    return "I am alive!", 200
+
+def run_flask():
+    # Render передает порт в переменную окружения PORT
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
+
+# Запускаем Flask в отдельном потоке, чтобы он не мешал боту
+threading.Thread(target=run_flask, daemon=True).start()
+# -------------------------------------
 
 # Теперь код берет токен из настроек Render, а не светит его в интернете
 API_TOKEN = os.getenv('BOT_TOKEN')
